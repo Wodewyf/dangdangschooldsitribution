@@ -12,6 +12,7 @@ import java.util.List;
 
 @Service
 public interface taskservice {
+    // ada
 
     //    生成任务
     int inserttask(task task);
