@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>taskmanage</title>
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+</head>
+<body class="hold-transition">
+<div id="app">
+    <div class="app-container">
+        <div class="box">
+            <el-form :inline="true" class="demo-form-inline">
+                <el-form-item label="用户姓名">
+                    <el-input v-model="pagination.userename" placeholder="用户姓名"></el-input>
+                </el-form-item>
+                <el-form-item label="骑手姓名">
+                    <el-input v-model="pagination.driverenglishname" placeholder="骑手姓名"></el-input>
+                </el-form-item>
+                <el-form-item label="任务状态">
+                    <el-input v-model="pagination.status" placeholder="任务状态"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button @click="getAll()" class="dalfBut">查询</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button @click="statistics" class="dalfBut">统计</el-button>
+                </el-form-item>
+            </el-form>
+
+            <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+                <el-table-column type="index" align="center" label="序号"></el-table-column>
+                <el-table-column prop="taskname" align="center" label="任务名"></el-table-column>
+                <el-table-column prop="taskprice" label="任务赏金" align="center"></el-table-column>
+                <el-table-column prop="taskdescription" label="任务具体描述" align="center"></el-table-column>
+                <el-table-column prop="phonenumber" label="用户手机号" align="center"></el-table-column>
+                <el-table-column prop="username" label="用户账号名" align="center"></el-table-column>
+                <el-table-column prop="userename" label="用户姓名" align="center"></el-table-column>
+                <el-table-column prop="status" label="任务状态" align="center"></el-table-column>
+                <el-table-column prop="taskstarttime" label="任务创建时间" align="center"></el-table-column>
+                <el-table-column prop="useraddress" label="用户地址" align="center"></el-table-column>
+                <el-table-column prop="driverenglishname" label="骑手姓名" align="center"></el-table-column>
+                <el-table-column prop="dphonenumber" label="骑手电话号码" align="center"></el-table-column>
+                <el-table-column prop="taskmiddletime" label="骑手接单时间" align="center"></el-table-column>
+                <el-table-column prop="driversendtime" label="骑手送达时间" align="center"></el-table-column>
+                <el-table-column prop="drivercalsendtime" label="骑手预期送达时间" align="center"></el-table-column>
+                <el-table-column label="操作" align="center">
+                    <template slot-scope="scope">
+                        <el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <!--            测栏-->
+            <el-drawer
+                    title="统计"
+                    :visible.sync="drawer"
+                    :direction="direction"
+            >
+
+
+                <el-descriptions title="统计" direction="vertical" :column="3" border>
+                    <el-descriptions-item label="总订单数">{{statisticsdata.totaltask}}</el-descriptions-item>
+                    <el-descriptions-item label="正在派送中单数">{{statisticsdata.totalpeisongzhong}}</el-descriptions-item>
+                    <el-descriptions-item label="已送达单数">{{statisticsdata.totalyisongda}}</el-descriptions-item>
+                    <el-descriptions-item label="已被用户删除单数">{{statisticsdata.totaldelete}}</el-descriptions-item>
+                    <el-descriptions-item label="已被用户取消单数">{{statisticsdata.totalcancel}}</el-descriptions-item>
+                    <el-descriptions-item label="正在派送中单数">{{statisticsdata.totalpeisongzhong}}</el-descriptions-item>
+                    <el-descriptions-item label="最多消费单数用户">{{statisticsdata.username}}</el-descriptions-item>
+                    <el-descriptions-item label="消费单数">{{statisticsdata.countxiadan}}</el-descriptions-item>
+                    <el-descriptions-item label="消费金额">{{statisticsdata.usertotalprice}}</el-descriptions-item>
+                    <el-descriptions-item label="最多接单单数骑手">{{statisticsdata.drivername}}</el-descriptions-item>
+                    <el-descriptions-item label="接单单数">{{statisticsdata.countjiedan}}</el-descriptions-item>
+                    <el-descriptions-item label="接单金额">{{statisticsdata.drivertotalprice}}</el-descriptions-item>
+
+
+                </el-descriptions>
+
+            </el-drawer>
+
+            <!--分页组件-->
+            <div class="pagination-container">
+                <el-pagination
+                        class="pagiantion"
+                        @current-change="handleCurrentChange"
+                        :current-page="pagination.currentPage"
+                        :page-size="pagination.pageSize"
+                        layout="total, prev, pager, next, jumper"
+                        :total="pagination.total">
+                </el-pagination>
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+<!-- 引入组件库 -->
+
+<!--<script src="js/axios-0.18.0.js"></script>-->
+<script src="\js\vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data: {
+            dataList: [],//当前页要展示的列表数据
+            dialogFormVisible: false,//添加表单是否可见
+            dialogFormVisible4Edit: false,//编辑表单是否可见
+            formData: {
+                id: "",
+                taskname: "",
+                taskprice: "",
+                taskdescription: "",
+                phonenumber: "",
+                username: "",
+                userename: "",
+                recevicetime: "",
+                status: "",
+                taskstarttime: "",
+                useraddress: "",
+                drivername: "",
+                driverenglishname: "",
+                dphonenumber: "",
+                taskmiddletime: "",
+                driversendtime: "",
+                drivercalsendtime: ""
+
+            },//表单数据
+            formData1: {
+                id: "",
+                taskname: "",
+                taskprice: "",
+                taskdescription: "",
+                phonenumber: "",
+                username: "",
+                userename: "",
+                recevicetime: "",
+                status: "",
+                taskstarttime: "",
+                useraddress: "",
+                drivername: "",
+                driverenglishname: "",
+                dphonenumber: "",
+                taskmiddletime: "",
+                driversendtime: "",
+                drivercalsendtime: ""
+
+            },
+
+            pagination: {//分页相关模型数据
+                currentPage: 1,//当前页码
+                pageSize: 6,//每页显示的记录数
+                total: 0,//总记录数,
+                userename: '',
+                driverenglishname: '',
+                status: '',
+            },
+            statisticsdata: {//统计数据
+                totaltask: "",
+                totalyisongda: "",
+                totalcancel: "",
+                totaldelete: "",
+                totalpeisongzhong: "",
+                username: "",
+                drivername: "",
+                countxiadan: "",
+                countjiedan: "",
+                usertotalprice: "",
+                drivertotalprice: "",
+
+            },
+            drawer: false,
+            direction: 'rtl',
+            colors: ['#99A9BF', '#F7BA2A', '#FF9900'],
+
+        },
+
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            this.getAll();
+        },
+
+        methods: {
+
+            getAll() {
+                s = "?userename=" + this.pagination.userename;
+                s += "&driverenglishname=" + this.pagination.driverenglishname;
+                s += "&status=" + this.pagination.status;
+                console.log(s);
+
+                axios({
+                    method: "get",
+                    url: "/tasks/admin/" + this.pagination.currentPage + "/" + this.pagination.pageSize + s,
+                }).then((res) => {
+                    this.dataList = res.data.data.records;
+                    this.pagination.total = Number(res.data.data.total);
+                    this.pagination.currentPage = Number(res.data.data.current);
+                    this.pagination.pageSize = Number(res.data.data.size);
+                })
+
+            },
+
+
+            //弹出添加窗口
+            handleCreate() {
+                this.dialogFormVisible = true;
+            },
+
+            //重置表单
+            resetForm() {
+            },
+
+
+            //取消
+            cancel() {
+                this.dialogFormVisible = false;
+                this.getAll();
+            },
+            // 删除
+            handleDelete(row) {
+                console.log(row.id);
+                axios({
+                    method: "delete",
+                    url: "/tasks/admin/" + row.id
+                }).then((res) => {
+                    this.getAll();
+                    this.$message({
+                        message: '恭喜你，删除成功',
+                        type: 'sucess'
+                    });
+                })
+            },
+
+
+            //切换页码
+            handleCurrentChange(currentPage) {
+                this.pagination.currentPage = currentPage;
+                this.getAll();
+            },
+            // 统计()
+            statistics() {
+                // 统计总订单任务数
+                axios({
+                    method: "post",
+                    url: "/tasks/totaltask"
+                }).then((res) => {
+                    this.drawer = true;
+                    this.statisticsdata.totaltask = res.data.data.totaltask;
+                    this.statisticsdata.totalyisongda = res.data.data.totalyisongda;
+                    this.statisticsdata.totalcancel = res.data.data.totalcancel;
+                    this.statisticsdata.totaldelete = res.data.data.totaldelete;
+                    this.statisticsdata.totalpeisongzhong = res.data.data.totalpeisongzhong;
+                    this.statisticsdata.username = res.data.data.username;
+                    this.statisticsdata.drivername = res.data.data.drivername;
+                    this.statisticsdata.countxiadan = res.data.data.countxiadan;
+                    this.statisticsdata.countjiedan = res.data.data.countjiedan;
+                    this.statisticsdata.usertotalprice = res.data.data.usertotalprice;
+                    this.statisticsdata.drivertotalprice = res.data.data.drivertotalprice;
+
+                })
+
+            }
+
+
+        }
+    })
+
+</script>
+
+</html>

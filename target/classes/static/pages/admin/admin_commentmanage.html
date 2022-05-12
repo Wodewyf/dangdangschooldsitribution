@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>评论管理</title>
+
+    <style lang="scss" scoped>
+        #container {
+            width: 100%;
+            height: 100vh;
+            padding-top: 100px;
+        }
+        #newCharts{
+            margin: 0 auto;
+            width: 800px;
+            height: 800px;
+        }
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="app-container">
+        <div class="box">
+            <el-form :inline="true" class="demo-form-inline">
+                <el-form-item label="用户账号名">
+                    <el-input v-model="pagination.username" placeholder="用户账号"></el-input>
+                </el-form-item>
+                <el-form-item label="骑手账号名">
+                    <el-input v-model="pagination.drivername" placeholder="骑手账号"></el-input>
+                </el-form-item>
+                <el-form-item label="订单号">
+                    <el-input v-model="pagination.id" placeholder="订单号"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button @click="getAll()" class="dalfBut">查询</el-button>
+                </el-form-item>
+            </el-form>
+
+
+                <el-button @click="getAll1()" class="dalfBut">点击刷新</el-button>
+            <el-button @click="getAll2()" class="dalfBut">统计视图</el-button>
+
+
+            <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+                <el-table-column type="index" align="center" label="序号"></el-table-column>
+                <el-table-column prop="id" label="订单" align="center"></el-table-column>
+                <el-table-column prop="username" label="用户姓名" align="center"></el-table-column>
+                <el-table-column prop="drivername" label="骑手姓名" align="center"></el-table-column>
+                <el-table-column prop="distributionspeedcomment" label="配送速度评价评分" align="center"></el-table-column>
+                <el-table-column prop="distributionattitudecomment" label="配送服务态度评分" align="center"></el-table-column>
+                <el-table-column prop="distributionobjectcommnet" label="配送物品完好度评分" align="center"></el-table-column>
+                <el-table-column prop="descriptioncommnet" label="总体评价" align="center"></el-table-column>
+                <el-table-column label="操作" align="center">
+                    <template slot-scope="scope">
+                        <el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <!--分页组件-->
+            <div class="pagination-container">
+                <el-pagination
+                        class="pagiantion"
+                        @current-change="handleCurrentChange"
+                        :current-page="pagination.currentPage"
+                        :page-size="pagination.pageSize"
+                        layout="total, prev, pager, next, jumper"
+                        :total="pagination.total">
+                </el-pagination>
+            </div>
+
+
+
+
+
+
+    </div>
+
+</div>
+
+    <div id="main" style="width: 600px;height:400px;"></div>
+
+</div>
+
+
+
+<script src="\js\vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
+<script>
+    var vue = new Vue({
+        el:"#app",
+        data:{
+            pagination: {//分页相关模型数据
+                currentPage: 1,//当前页码
+                pageSize:5,//每页显示的记录数
+                total: 0,//总记录数,
+                username:"",
+                drivername:"",
+                id:""
+
+            },
+            dataList:[],
+
+            // 统计数据
+            datastaic:[],
+            // 骑手账号
+            drivernames:[],
+            // 订单数
+            counts:[],
+            // 平均数
+            avgs:[]
+
+        },
+
+
+
+
+        created(){
+            this.getAll();
+            axios({
+                method:"get",
+                url:"/comments/table"
+            }).then((res)=>{
+                // 接数据
+                this.datastaic = res.data.data;
+                for (let i = 0; i < res.data.data.length; i++) {
+                    // 遍历
+                    this.drivernames[i] = this.datastaic[i].drivername;
+                    this.counts[i] = this.datastaic[i].count;
+                    this.avgs[i] = this.datastaic[i].avg;
+
+                }
+                console.log(this.drivernames);
+
+            })
+
+        },
+        methods: {
+            getAll2() {
+
+
+
+
+                // 基于准备好的dom，初始化echarts实例
+                var myChart = echarts.init(document.getElementById('main'));
+                // 指定图表的配置项和数据
+                var option = {
+                    title: {
+                        text: "统计"
+                    },
+                    tooltip: {},
+                    legend: {
+                        data: ['得到评价数','平均得分']
+                    },
+                    xAxis: {
+                        data: this.drivernames
+                    },
+                    yAxis: {},
+                    series: [
+                        {
+                            name: '得到评价数',
+                            type: 'bar',
+                            data: this.counts
+                        }, {
+                            name: '平均得分',
+                            type: 'bar',
+                            data: this.avgs
+                        }
+                    ]
+                };
+
+                // 使用刚指定的配置项和数据显示图表。
+                myChart.hideLoading();
+                myChart.setOption(option);
+            },
+            // 点击刷新
+            getAll1() {
+                axios({
+                    method: "get",
+                    url: "/comments/" + this.pagination.currentPage + "/" + this.pagination.pageSize
+                }).then((res) => {
+                    if (res.data.flag == "true") {
+                        console.log(res.data.data);
+                        this.dataList = res.data.data.records;
+                        this.pagination.total = Number(res.data.data.total);
+                        this.pagination.currentPage = Number(res.data.data.current);
+                        this.pagination.pageSize = Number(res.data.data.size);
+
+                    }
+
+                })
+            },
+
+            getAll() {
+                // 条件查询
+                s = "?username=" + this.pagination.username;
+                s += "&drivername=" + this.pagination.drivername;
+                s += "&id=" + this.pagination.id;
+                console.log(s);
+
+
+                axios({
+                    method: "get",
+                    url: "/comments/" + this.pagination.currentPage + "/" + this.pagination.pageSize + s
+                }).then((res) => {
+                    if (res.data.flag == "true") {
+                        console.log(res.data.data);
+                        this.dataList = res.data.data.records;
+                        this.pagination.total = Number(res.data.data.total);
+                        this.pagination.currentPage = Number(res.data.data.current);
+                        this.pagination.pageSize = Number(res.data.data.size);
+
+                    }
+
+                })
+
+            },
+            // 删除操作
+            handleDelete(row) {
+                console.log(row.commentid);
+                console.log("1231231");
+                axios({
+                    method: "delete",
+                    url: "/comments/delete/" + row.commentid
+                }).then((res) => {
+                    if (res.data.flag == "true") {
+                        this.getAll();
+                        this.$message({
+                            message: '恭喜你，删除成功',
+                            type: 'sucess'
+                        });
+                    }
+                })
+
+            },
+            //切换页码
+            handleCurrentChange(currentPage) {
+                this.pagination.currentPage = currentPage;
+                this.getAll();
+            },
+
+
+        }
+    })
+</script>
+
+<script>
+
+</script>
+
+</body>
+</html>

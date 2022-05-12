@@ -1,0 +1,32 @@
+#配置相关信息
+spring:
+  datasource:
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/db1?serverTimezone=GMT%2b8&useUnicode=true&characterEncoding=utf8&useBodyEncodingForURI=true
+      username: root
+      password: wyf123...
+
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
+  global-config:
+    db-config:
+      id-type: auto
+
+
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: utf-8
+
+
+school:
+  imagepath: C:\IdeaProjects\schooldsitribution\src\main\resources\static\image\
+
+
+

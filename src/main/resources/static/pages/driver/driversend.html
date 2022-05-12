@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>确认收货</title>
+</head>
+<body>
+
+<div id="driversend">
+    <!--    侧栏-->
+    <el-drawer
+            title="评价"
+            :visible.sync="drawer"
+            :direction="direction"
+    >
+
+
+        <el-descriptions title="评价" direction="vertical" :column="2" border>
+            <el-descriptions-item label="订单号">{{comments.id}}</el-descriptions-item>
+            <el-descriptions-item label="配送速度评价评分">{{comments.distributionspeedcomment}}</el-descriptions-item>
+            <el-descriptions-item label="配送服务态度评分">{{comments.distributionattitudecomment}}</el-descriptions-item>
+            <el-descriptions-item label="配送物品完好度评分">{{comments.distributionobjectcommnet}}</el-descriptions-item>
+            <el-descriptions-item label="总体评价">{{comments.descriptioncommnet}}</el-descriptions-item>
+        </el-descriptions>
+
+
+    </el-drawer>
+
+    <el-form :inline="true" class="demo-form-inline">
+        <el-form-item label="用户姓名">
+            <el-input v-model="taskstatus1.userename" placeholder="用户姓名"></el-input>
+        </el-form-item>
+
+        <el-form-item label="地址">
+            <el-input v-model="taskstatus1.useraddress" placeholder="用户地址"></el-input>
+        </el-form-item>
+
+        <el-form-item label="任务奖金">
+            <el-input v-model="taskstatus1.taskprice" placeholder="任务奖金"></el-input>
+        </el-form-item>
+
+        <el-form-item>
+            <el-button @click="select" class="dalfBut">查询</el-button>
+        </el-form-item>
+
+        <el-row>
+            <el-button type="success" round @click="flash">点击刷新</el-button>
+        </el-row>
+    </el-form>
+
+
+    <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+
+        <el-table-column type="index" align="center" label="序号"></el-table-column>
+        <el-table-column prop="taskname" label="任务名称" align="center"></el-table-column>
+        <el-table-column prop="taskprice" label="任务奖金" align="center"></el-table-column>
+        <el-table-column prop="taskdescription" label="任务描述" align="center"></el-table-column>
+        <el-table-column prop="phonenumber" label="用户电话号码" align="center"></el-table-column>
+        <el-table-column prop="userename" label="用户姓名" align="center"></el-table-column>
+        <el-table-column prop="recevicetime" label="用户约定送达时间" align="center"></el-table-column>
+        <el-table-column prop="status" label="订单状态" align="center"></el-table-column>
+        <el-table-column prop="taskstarttime" label="任务创立时间" align="center"></el-table-column>
+        <el-table-column label="操作" align="center">
+            <template slot-scope="scope">
+                <el-button type="primary" size="mini" @click="handlemoredate(scope.row)">查看任务详情</el-button>
+                <el-button type="warning" size="mini" @click="handleconfirm(scope.row)">已送达</el-button>
+                <el-button type="danger" size="mini" @click="handelcomment(scope.row)">查看评论</el-button>
+            </template>
+        </el-table-column>
+    </el-table>
+
+    <div class="add-form">
+        <el-dialog title="任务详情" :visible.sync="dialogFormVisible">
+            <el-form ref="dataAddForm" label-position="right" label-width="100px">
+                <el-descriptions title="任务详情" :column="3" border>
+                    <el-descriptions-item label="任务名" label-class-name="my-label" content-class-name="my-content">
+                        {{taskinfo.taskname}}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="任务奖金">{{taskinfo.taskprice}}</el-descriptions-item>
+                    <el-descriptions-item label="任务备注信息">{{taskinfo.taskdescription}}</el-descriptions-item>
+                    <el-descriptions-item label="任务创立时间">{{taskinfo.taskstarttime}}</el-descriptions-item>
+                    <el-descriptions-item label="任务状态">{{taskinfo.status}}</el-descriptions-item>
+                    <el-descriptions-item label="用户电话">{{taskinfo.phonenumber}}</el-descriptions-item>
+                    <el-descriptions-item label="用户姓名">{{taskinfo.userename}}</el-descriptions-item>
+                    <el-descriptions-item label="任务预计收货时间">{{taskinfo.recevicetime}}</el-descriptions-item>
+                    <el-descriptions-item label="联系地址" :contentStyle="{'text-align': 'right'}">
+                        {{taskinfo.useraddress}}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="图片">
+                        <img :src="img" height="80px" width="80px">
+                    </el-descriptions-item>
+                    <el-descriptions-item label="骑手姓名">{{taskinfo.driverenglishname}}</el-descriptions-item>
+                    <el-descriptions-item label="骑手电话号码">{{taskinfo.dphonenumber}}</el-descriptions-item>
+                    <el-descriptions-item label="骑手预计收货时间">{{taskinfo.drivercalsendtime}}</el-descriptions-item>
+                    <el-descriptions-item label="骑手接单时间">{{taskinfo.taskmiddletime}}</el-descriptions-item>
+                </el-descriptions>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisible=false">确定查看</el-button>
+            </div>
+        </el-dialog>
+    </div>
+</div>
+
+
+<script src="\js\vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+
+<script>
+    var vue = new Vue({
+        el: "#driversend",
+
+        data: {
+            dataList: [],
+            dialogFormVisible: false,
+            taskinfo: {},
+            taskstaus: {
+                status: "已送达",
+                id: "",
+            },
+
+            taskstatus1: {},
+            comment: {},
+            // 展开评论
+            comments: {},
+            drawer: false,
+            direction: 'rtl',
+            img: ""
+
+        },
+        created() {
+            this.save();
+        },
+        methods: {
+            select() {
+                axios({
+                    method: "post",
+                    url: "/tasks/getstatus2",
+                    data: this.taskstatus1
+                }).then((res) => {
+                    this.dataList = res.data.data;
+                })
+            },
+
+            flash() {
+                this.save();
+            },
+            save() {
+                // 获取存储在浏览器的账号信息
+                const driverinfo = window.localStorage.getItem('driverinfo');
+                if (driverinfo != null) {
+                    this.driverinfo = JSON.parse(driverinfo);
+
+                }
+                // 获取到drivername的值，查询task表所有drivername的记录
+                drivername = this.driverinfo.drivername;
+                console.log(drivername);
+                axios({
+                    method: "get",
+                    url: "/tasks/drivername/" + drivername
+                }).then((res) => {
+                    if (res.data.flag == "true")
+                        this.dataList = res.data.data;
+
+                })
+            },
+            handlemoredate(row) {
+                console.log(row.id);
+                axios({
+                    method: "get",
+                    url: "/tasks/" + row.id
+                }).then((res) => {
+                    if (res.data.flag == "true") {
+                        this.dialogFormVisible = true;
+                        this.taskinfo = res.data.data;
+                    }
+                    // 下载图片
+                    axios({
+                        method: "get",
+                        url: "/images/download?image=" + this.taskinfo.image
+                    }).then((res => {
+                        this.img = "/images/download?image=" + this.taskinfo.image
+
+                    }))
+
+                })
+            }, handleconfirm(row) {
+                this.$confirm('此操作将确认该任务, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    axios({
+                        method: "get",
+                        url: "/tasks/" + row.id
+                    }).then((res) => {
+                        if (res.data.flag == "true") {
+                            this.taskstaus.id = res.data.data.id;
+                            axios({
+                                method: "put",
+                                url: "/tasks/confirm",
+                                data: this.taskstaus
+                            }).then((res) => {
+                                if (res.data.flag == "true") {
+                                    this.$message({
+                                        type: 'success',
+                                        message: '点击送达成功!'
+                                    });
+                                    this.save();
+                                }
+                            })
+                        }
+                    })
+
+
+                });
+
+
+            }, handelcomment(row) {
+                axios({
+                    method: "get",
+                    url: "/tasks/" + row.id
+                }).then((res) => {
+
+                    if (res.data.flag == "true") {
+                        if (res.data.data.status != "已送达") {
+                            this.$message({
+                                type: 'info',
+                                message: '抱歉，此状态无法查看评论'
+                            });
+                        } else if (res.data.data.status == "已送达") {
+                            this.comment = res.data.data;
+                            axios({
+                                method: "post",
+                                url: "/comments/comment",
+                                data: this.comment
+                            }).then((res) => {
+                                if (res.data.flag == "true") {
+                                    this.drawer = true;
+                                    this.comments = res.data.data;
+                                }else{
+                                    this.$message({
+                                        type: 'error',
+                                        message: '抱歉，用户还没有进行评价，请稍后再看'
+                                    });
+                                }
+
+                            })
+                        }
+
+                    }
+                })
+
+
+            }
+
+        },
+
+    })
+</script>
+</body>
+</html>

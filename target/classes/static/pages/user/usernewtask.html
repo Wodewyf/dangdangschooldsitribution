@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人信息管理</title>
+
+    <style>
+        .info {
+            width: 600px;
+            height: 800px;
+            background: #E9EEF3;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+            text-align: center;
+            padding-top: 100px;
+        }
+
+        .avatar-uploader .el-upload {
+            border: 1px dashed #d9d9d9;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-uploader .el-upload:hover {
+            border-color: #409EFF;
+        }
+
+        .avatar-uploader-icon {
+            font-size: 28px;
+            color: #8c939d;
+            width: 178px;
+            height: 178px;
+            line-height: 178px;
+            text-align: center;
+        }
+
+        .avatar {
+            width: 178px;
+            height: 178px;
+            display: block;
+        }
+    </style>
+
+</head>
+<body>
+<div id="info" class="info">
+
+    <el-form ref="form" :model="task" label-width="80px" style="text-align: center">
+        <el-form-item label="任务名">
+            <el-col :span="16">
+                <el-input v-model="task.taskname" prefix-icon="el-icon-edit"></el-input>
+            </el-col>
+        </el-form-item>
+        <el-form-item label="价格">
+            <el-col :span="16">
+                <el-input v-model="task.taskprice" prefix-icon="el-icon-s-goods"></el-input>
+            </el-col>
+        </el-form-item>
+
+        <el-form-item label="选择预计送达时间">
+            <el-date-picker
+                    v-model="task.recevicetime"
+                    type="datetime"
+                    placeholder="选择日期时间"
+                    value-format=yyyy-MM-dd_HH:mm:ss>
+            </el-date-picker>
+        </el-form-item>
+
+        <el-form-item label="委派人手机号">
+            <el-col :span="16">
+                <el-input v-model="task.phonenumber" prefix-icon="el-icon-mobile-phone"></el-input>
+            </el-col>
+        </el-form-item>
+        <el-form-item label="姓名">
+            <el-col :span="16">
+                <el-input v-model="task.userename" prefix-icon="el-icon-medal"></el-input>
+            </el-col>
+        </el-form-item>
+        <el-form-item label="地址">
+            <el-col :span="16">
+                <el-input v-model="task.useraddress" prefix-icon="el-icon-medal"></el-input>
+            </el-col>
+        </el-form-item>
+
+        <el-col :span="24">
+            <el-form-item label="描述">
+                <el-input v-model="task.taskdescription" type="textarea"></el-input>
+            </el-form-item>
+        </el-col>
+
+        <!--        上传图片-->
+        <el-upload
+                action="/images/insertimages"
+                list-type="picture-card"
+                :on-preview="handlePictureCardPreview"
+                :on-remove="handleRemove"
+                :on-success="handlesuccess">
+            <i class="el-icon-plus"></i>
+        </el-upload>
+        <el-dialog :visible.sync="dialogVisible">
+            <img width="100%" :src="dialogImageUrl" alt="">
+        </el-dialog>
+
+        <el-row>
+            <el-button type="success" round @click="sendsub">点击刷新</el-button>
+        </el-row>
+
+
+    </el-form>
+
+
+</div>
+
+
+<script src="\js\vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<script>
+    var vue = new Vue({
+        el: "#info",
+        created() {
+
+        },
+        data: {
+            task: {
+                taskname: "",
+                taskprice: "",
+                taskdescription: "",
+                phonenumber: "",
+                username: "",
+                userename: "",
+                recevicetime: "",
+                status: "待接单",
+                useraddress: "",
+                image: ""
+            },
+            // },options: [{
+            //     value: '1',
+            //     label: '用户'
+            // }, {
+            //     value: '2',
+            //     label: '骑手'
+            // }, {
+            //     value: '3',
+            //     label: '管理员'
+            // }],
+            dialogImageUrl: '',
+            dialogVisible: false
+
+        }, methods: {
+            // 发布任务
+            sendsub() {
+                console.log(this.task.value1);
+
+                axios({
+                    method: "post",
+                    url: "/tasks",
+                    data: this.task
+                }).then((res) => {
+                    if (res.data.flag == "true") {
+                        this.$notify({
+                            title: 'title',
+                            message: '恭喜你添加成功'
+                        });
+                    }
+                }).finally((res) => {
+                    window.location.href = "userinfo.html";
+                })
+            },
+            handleRemove(file, fileList) {
+                console.log(file, fileList);
+                console.log(file.response);
+            },
+            handlePictureCardPreview(file) {
+                this.dialogImageUrl = file.url;
+                this.dialogVisible = true;
+                console.log(this.dialogImageUrl);
+
+
+            },//上传成功，将图片地址名称传到task中，准备传入数据库
+            handlesuccess(file, fileList) {
+                console.log(file.data);
+                this.task.image = file.data;
+                console.log(this.task);
+
+            }
+
+
+        }, created() {
+            // 获取存储在浏览器的账号信息
+            const userinfo = window.localStorage.getItem('userinfo');
+            if (userinfo != null) {
+                this.userinfo = JSON.parse(userinfo);
+                console.log(this.userinfo);
+            }
+            userid = this.userinfo.id;
+            axios({
+                method: "get",
+                url: "/users/chazhaoid/" + userid
+            }).then((res) => {
+                this.task.userename = res.data.data.userename;
+                this.task.phonenumber = res.data.data.phonenumber;
+                this.task.username = res.data.data.username;
+                this.task.useraddress = res.data.data.address;
+            })
+
+
+        },
+
+
+    })
+</script>
+</body>
+
+</html>

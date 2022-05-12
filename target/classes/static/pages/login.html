@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login!</title>
+    <style>
+        body {
+            background: aliceblue;
+        }
+
+        .app {
+            width: 400px;
+            height: 400px;
+            background: #fff;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+            text-align: center;
+            padding-top: 100px;
+        }
+
+        .el-input .el-input__inner {
+            font-size: 1.5em;
+            font-weight: bolder;
+            padding: 0 4px;
+        }
+
+        /*下拉栏字体*/
+        .select_item {
+            height: 10px;
+            line-height: 25px;
+            font-size: 5px;
+        }
+
+        .pp {
+            font-size: 60px;
+
+            font-style: italic;
+
+            font-family: Arial, “Microsoft Yahei”;
+
+            font-weight: bold;
+
+            color: skyblue;
+        }
+
+    </style>
+
+</head>
+<body>
+<p class="pp" align="center">当当校园跑腿系统</p>
+
+<div id="app" class="app">
+
+
+    <el-form ref="form" :model="user" label-width="80px" style="text-align: center">
+        <el-form-item label="账号">
+
+            <el-col :span="16">
+                <el-input v-model="user.username" prefix-icon="el-icon-user-solid"></el-input>
+            </el-col>
+
+        </el-form-item>
+        <el-form-item label="密码">
+            <el-col :span="16">
+                <el-input v-model="user.userpassword" :show-password=true prefix-icon="el-icon-s-goods"></el-input>
+            </el-col>
+        </el-form-item>
+        <!--        <el-form-item label="验证码">-->
+        <!--            <el-col :span="16" >-->
+        <!--                <el-input v-model="brand.ordered" prefix-icon="el-icon-loading"></el-input>-->
+        <!--            </el-col>-->
+        <!--        </el-form-item >-->
+        <el-form-item label="选择身份">
+            <el-col :span="16">
+                <el-select v-model="identy" placeholder="请选择" style="font-size:2px">
+                    <el-option
+                            v-for="item in options"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                    </el-option>
+                </el-select>
+            </el-col>
+
+        </el-form-item>
+        <el-button type="success" @click="login">登录</el-button>
+        <el-button type="warning" @click="register">还有没账号？点击注册！</el-button>
+    </el-form>
+
+
+</div>
+
+
+<script src="\js\vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+
+<script>
+
+    new Vue({
+        el: "#app",
+        created() {
+            console.log("afasfasf");
+        },
+        methods: {
+
+            // 登录功能
+            login() {
+
+                console.log(this.identy);
+                if (this.identy == 0) {
+                    this.$alert('请选择你要登录的角色', '提示', {
+                        confirmButtonText: '确定',
+                        callback: action => {
+                            this.$message({
+                                type: 'info',
+                                message: '选择登录角色'
+                            });
+                        }
+                    });
+                }
+                if (this.identy == 1) {
+                    axios({
+                        method: "get",
+                        url: "/users/login/" + this.user.username + "/" + this.user.userpassword
+                    }).then((res) => {
+                        if (res.data.flag == "true") {
+                            localStorage.setItem('userinfo', JSON.stringify(res.data.data));
+                            window.location.href = 'userindex.html';
+                        } else {
+                            this.$alert('密码或账号名错误', '提示', {
+                                confirmButtonText: '确定',
+                                callback: action => {
+                                    this.$message({
+                                        type: 'info',
+                                        message: '请重新输入密码'
+                                    });
+                                }
+                            });
+                        }
+
+                    })
+                } else if (this.identy == 2) {
+                    axios({
+                        method: "get",
+                        url: "/drivers/login/" + this.user.username + "/" + this.user.userpassword
+                    }).then((res) => {
+                        if (res.data.flag == "true") {
+                            localStorage.setItem('driverinfo', JSON.stringify(res.data.data));
+                            window.location.href = 'driverindex.html';
+                        } else {
+                            this.$alert('密码或账号名错误', '提示', {
+                                confirmButtonText: '确定',
+                                callback: action => {
+                                    this.$message({
+                                        type: 'info',
+                                        message: '请重新输入密码'
+                                    });
+                                }
+                            });
+                        }
+
+                    })
+                } else if (this.identy == 3) {
+                    axios({
+                        method: "get",
+                        url: "/admins/login/" + this.user.username + "/" + this.user.userpassword
+                    }).then((res) => {
+                        if (res.data.flag == "true") {
+                            localStorage.setItem('admininfo', JSON.stringify(res.data.data));
+                            window.location.href = 'adminindex.html';
+                        } else {
+                            this.$alert('密码或账号名错误', '提示', {
+                                confirmButtonText: '确定',
+                                callback: action => {
+                                    this.$message({
+                                        type: 'info',
+                                        message: '请重新输入密码'
+                                    });
+                                }
+                            });
+                        }
+
+                    })
+                }
+
+
+            },//注册
+            register() {
+                window.location.href = 'register.html';
+            }
+
+        }, data: {
+            user: {
+                username: '',
+                userpassword: '',
+                id: ''
+            }, options: [{
+                value: '1',
+                label: '用户'
+            }, {
+                value: '2',
+                label: '骑手'
+            }, {
+                value: '3',
+                label: '管理员'
+            }],
+            identy: ''
+
+        }
+    })
+
+
+</script>
+
+
+</body>
+</html>

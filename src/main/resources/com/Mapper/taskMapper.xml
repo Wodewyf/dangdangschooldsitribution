@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!---->
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Mapper.taskMapper">
+    <update id="updatestatus">
+        update tb_task set status=#{status} where id=#{id}
+    </update>
+
+    <update id="updatedeletestatus2">
+        update tb_task set status=#{status} where id=#{id}
+    </update>
+
+    <update id="updatetask">
+        update tb_task set
+        drivername=#{drivername},driverenglishname=#{driverenglishname},dphonenumber=#{dphonenumber},
+        taskmiddletime=#{taskmiddletime},drivercalsendtime=#{drivercalsendtime},status=#{status} where
+        id=#{id}
+    </update>
+    <update id="updatetask2">
+        update tb_task set
+        status=#{status},driversendtime=#{driversendtime} where id=#{id}
+    </update>
+
+
+    <select id="selectbyusername" resultType="com.domain.task">
+        select * from tb_task where username=#{username} and status!="delete"
+    </select>
+
+    <select id="selectbytask" resultType="com.domain.task">
+        select * from tb_task where status=#{status}
+    </select>
+
+    <select id="selectbydrivername" resultType="com.domain.task">
+        select * from tb_task where drivername=#{drivername} and status!="delete"
+    </select>
+
+
+    <select id="selectstatus" resultType="java.lang.String">
+        select status from tb_task where id=#{id}
+    </select>
+
+    <select id="selecttotaltask" resultType="java.lang.Integer">
+        select count(*) from tb_task
+    </select>
+    <select id="selecttotalyisongda" resultType="java.lang.Integer">
+        select count(*) from tb_task where status="已送达"
+    </select>
+    <select id="selecttotalcancel" resultType="java.lang.Integer">
+        select count(*) from tb_task where status="cancel"
+    </select>
+    <select id="selecttotaldelete" resultType="java.lang.Integer">
+        select count(*) from tb_task where status="delete"
+    </select>
+    <select id="selecttotalpeisongzhong" resultType="java.lang.Integer">
+        select count(*) from tb_task where status="配送中"
+    </select>
+    <select id="selectmosttaskusername" resultType="com.domain.statistic">
+        select username,count(id) countxiadan,sum(taskprice) usertotalprice from tb_task where status="已送达" group by
+        username order by countxiadan
+    </select>
+    <select id="selectmosttaskdrivername" resultType="com.domain.statistic">
+        select drivername,count(id) countjiedan,sum(taskprice) drivertotalprice from tb_task where status="已送达" group by
+        drivername order by countjiedan
+    </select>
+
+
+</mapper>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <!-- 页面meta -->
+
+    <meta charset="utf-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>drivermanage</title>
+
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+
+    <!-- 引入样式 -->
+
+    <link href="js/element.css">
+
+</head>
+
+<body class="hold-transition">
+
+<div id="app">
+
+
+    <div class="app-container">
+
+        <div class="box">
+
+            <el-form :inline="true" class="demo-form-inline">
+
+                <el-form-item label="骑手用户名">
+                    <el-input v-model="pagination.drivername" placeholder="骑手用户名"></el-input>
+                </el-form-item>
+                <el-form-item label="骑手姓名">
+                    <el-input v-model="pagination.driverenglishname" placeholder="骑手姓名"></el-input>
+                </el-form-item>
+                <el-form-item label="骑手电话">
+                    <el-input v-model="pagination.dphonenumber" placeholder="骑手电话"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button @click="getAll()" class="dalfBut">查询</el-button>
+                    <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
+                </el-form-item>
+            </el-form>
+
+            <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+
+                <el-table-column type="index" align="center" label="序号"></el-table-column>
+                <el-table-column prop="drivername" label="骑手账号" align="center"></el-table-column>
+                <el-table-column prop="driverpassword" label="骑手账号密码" align="center"></el-table-column>
+                <el-table-column prop="dphonenumber" label="骑手手机号" align="center"></el-table-column>
+                <el-table-column prop="driverenglishname" label="骑手姓名" align="center"></el-table-column>
+                <el-table-column prop="description" label="描述" align="center"></el-table-column>
+                <el-table-column label="操作" align="center">
+                    <template slot-scope="scope">
+                        <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+                        <el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <!--分页组件-->
+            <div class="pagination-container">
+
+                <el-pagination
+                        class="pagiantion"
+
+                        @current-change="handleCurrentChange"
+
+                        :current-page="pagination.currentPage"
+
+                        :page-size="pagination.pageSize"
+
+                        layout="total, prev, pager, next, jumper"
+
+                        :total="pagination.total">
+
+                </el-pagination>
+
+            </div>
+
+            <!-- 新增标签弹层 -->
+
+            <div class="add-form">
+                <el-dialog title="新增骑手" :visible.sync="dialogFormVisible">
+                    <el-form ref="dataAddForm" :model="formData" label-position="right" label-width="100px">
+                        <el-row>
+                            <el-col :span="12">
+                                <el-form-item label="骑手账号" prop="drivername">
+                                    <el-input v-model="formData.drivername"/>
+                                </el-form-item>
+                            </el-col>
+
+                            <el-col :span="12">
+                                <el-form-item label="骑手密码" prop="driverpassword">
+                                    <el-input v-model="formData.driverpassword"/>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="骑手姓名" prop="driverenglishname">
+                                    <el-input v-model="formData.driverenglishname"/>
+                                </el-form-item>
+                            </el-col>
+
+                            <el-col :span="12">
+                                <el-form-item label="年龄" prop="age">
+                                    <el-input v-model="formData.age"/>
+                                </el-form-item>
+                            </el-col>
+
+                            <el-col :span="12">
+                                <el-form-item label="手机号码" prop="dphonenumber">
+                                    <el-input v-model="formData.dphonenumber"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="24">
+                                <el-form-item label="描述" prop="description">
+                                    <el-input v-model="formData.description" type="textarea"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="cancel()">取消</el-button>
+                        <el-button type="primary" @click="handleAdd()">确定</el-button>
+                    </div>
+
+                </el-dialog>
+
+            </div>
+
+            <!-- 编辑标签弹层 -->
+            <div class="add-form">
+
+                <el-dialog title="编辑检查项" :visible.sync="dialogFormVisible4Edit">
+
+                    <el-form ref="dataEditForm" :model="formData1" label-position="right" label-width="100px">
+
+                        <el-row>
+                            <el-col :span="12">
+                                <el-form-item label="骑手账号" prop="drivername">
+                                    <el-input v-model="formData1.drivername"/>
+                                </el-form-item>
+                            </el-col>
+
+                            <el-col :span="12">
+                                <el-form-item label="骑手密码" prop="driverpassword">
+                                    <el-input v-model="formData1.driverpassword"/>
+                                </el-form-item>
+                            </el-col>
+
+
+                            <el-col :span="12">
+                                <el-form-item label="姓名" prop="driverenglishname">
+                                    <el-input v-model="formData1.driverenglishname"/>
+                                </el-form-item>
+                            </el-col>
+
+                            <el-col :span="12">
+                                <el-form-item label="年龄" prop="age">
+                                    <el-input v-model="formData1.age"/>
+                                </el-form-item>
+                            </el-col>
+
+                            <el-col :span="12">
+                                <el-form-item label="手机号码" prop="dphonenumber">
+                                    <el-input v-model="formData1.dphonenumber"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+
+                        <el-row>
+                            <el-col :span="24">
+                                <el-form-item label="描述">
+                                    <el-input v-model="formData1.description" type="textarea"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                    </el-form>
+
+                    <div slot="footer" class="dialog-footer">
+
+                        <el-button @click="cancel()">取消</el-button>
+
+                        <el-button type="primary" @click="handleEdit()">确定</el-button>
+
+                    </div>
+
+                </el-dialog>
+
+            </div>
+
+            </el-dialog>
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+</body>
+
+<!-- 引入组件库 -->
+
+<!--<script src="js/axios-0.18.0.js"></script>-->
+<script src="\js\vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data: {
+            dataList: [],//当前页要展示的列表数据
+            dialogFormVisible: false,//添加表单是否可见
+            dialogFormVisible4Edit: false,//编辑表单是否可见
+            formData: {
+                drivername: '',
+                driverpassword: '',
+                driverenglishname: '',
+                dphonenumber: '',
+                description: ''
+
+            },//表单数据
+            formData1: {},
+
+            pagination: {//分页相关模型数据
+                currentPage: 1,//当前页码
+                pageSize: 6,//每页显示的记录数
+                total: 0,//总记录数,
+                drivername: '',
+                driverenglishname: '',
+                age: '',
+                dphonenumber: '',
+
+
+            }
+        },
+
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            this.getAll();
+        },
+
+        methods: {
+            // 条件查询
+            // getAll1(){
+            //     console.log(this.pagination.drivername);
+            //     axios({
+            //         method:"post",
+            //         url:"/drivers/admincond",
+            //         data:this.pagination
+            //     }).then((res)=>{
+            //          this.dataList = res.data.data;
+            //          this.getAll();
+            //     })
+            //
+            // },
+            //列表
+            // getAll() {
+            //     axios({
+            //         method:"get",
+            //         url:"/drivers"
+            //     }).then((res)=>{
+            //         this.dataList = res.data.data;
+            //     })
+            //
+            // },
+
+            //分页查询
+            getAll() {
+
+                s = "?drivername=" + this.pagination.drivername;
+                s += "&driverenglishname=" + this.pagination.driverenglishname;
+                s += "&dphonenumber" + this.pagination.dphonenumber;
+                console.log(s);
+
+                axios({
+                    method: "get",
+                    url: "/drivers/admin/" + this.pagination.currentPage + "/" + this.pagination.pageSize + s,
+                }).then((res) => {
+                    this.dataList = res.data.data.records;
+                    this.pagination.total = Number(res.data.data.total);
+                    this.pagination.currentPage = Number(res.data.data.current);
+                    this.pagination.pageSize = Number(res.data.data.size);
+                })
+
+            },
+
+
+            //弹出添加窗口
+            handleCreate() {
+                this.dialogFormVisible = true;
+            },
+
+            //重置表单
+            resetForm() {
+            },
+
+            //添加
+            handleAdd() {
+                axios({
+                    method: "post",
+                    url: "/drivers/admin",
+                    data: this.formData
+                }).then((res) => {
+                    if (res.data.flag == "true") {
+                        this.dialogFormVisible = false;
+                        this.getAll();
+                        this.$message({
+                            message: '恭喜你，添加成功',
+                            type: 'sucess'
+                        });
+                    }
+                })
+            },
+
+            //取消
+            cancel() {
+                this.dialogFormVisible = false;
+                this.getAll();
+            },
+            // 删除
+            handleDelete(row) {
+                console.log(row.id);
+                axios({
+                    method: "delete",
+                    url: "/drivers/admin/" + row.id
+                }).then((res) => {
+                    this.getAll();
+                    this.$message({
+                        message: '恭喜你，删除成功',
+                        type: 'sucess'
+                    });
+                })
+            },
+
+            //弹出编辑窗口
+            handleUpdate(row) {
+
+                axios({
+                    method: "get",
+                    url: "/drivers/admin/" + row.id
+                }).then((res) => {
+                    if (res.data.flag == "flase") {
+                        this.$message({
+                            message: '抱歉该数据不存在',
+                            type: 'warning'
+                        });
+                    } else if (res.data.flag == "true") {
+                        this.dialogFormVisible4Edit = true;
+
+                        // this.$set(this.formData, 'drivername', res.data.data.drivername)
+                        this.formData1 = res.data.data;
+                        // this.formData.drivername=res.data.data.drivername;
+                        // this.formData.driverpassword=res.data.data.driverpassword;
+                        // this.formData.driverenglishname=res.data.data.driverenglishname;
+                        // this.formData.age=res.data.data.age;
+                        // this.formData.dphonenumber=res.data.data.dphonenumber;
+                        // this.formData.description=res.data.data.description;
+                    }
+                })
+
+            },
+
+            // 修改
+            handleEdit() {
+                axios({
+                    method: "put",
+                    url: "/drivers/admin",
+                    data: this.formData1
+                }).then((res) => {
+                    if (res.data.flag == "true") {
+                        this.dialogFormVisible4Edit = false;
+                        this.getAll();
+                        this.$message({
+                            message: '恭喜你，修改成功',
+                            type: 'sucess'
+                        });
+                    } else {
+                        this.$message({
+                            message: '抱歉，修改失败请重新操作',
+                            type: 'warning'
+                        });
+                    }
+                })
+            },
+
+            //切换页码
+            handleCurrentChange(currentPage) {
+                this.pagination.currentPage = currentPage;
+                this.getAll();
+            },
+
+            //条件查询
+
+        }
+    })
+
+</script>
+
+</html>

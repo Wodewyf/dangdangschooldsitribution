@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>骑手信息管理</title>
+</head>
+<body>
+<div id="info">
+    <el-descriptions title="修改个人信息" direction="vertical" :column="1" border>
+        <el-descriptions-item label="设置新密码">
+            <el-input v-model="infolist.driverpassword"></el-input>
+        </el-descriptions-item>
+        <el-descriptions-item label="确认输入新密码">
+            <el-input v-model="infolist.driverpassword"></el-input>
+        </el-descriptions-item>
+
+        <el-descriptions-item label="手机号">
+            <el-input v-model="infolist.dphonenumber"></el-input>
+        </el-descriptions-item>
+        <el-descriptions-item label="骑手姓名">
+            <el-input v-model="infolist.driverenglishname"></el-input>
+        </el-descriptions-item>
+    </el-descriptions>
+
+    <el-button type="success" round @click="gogogo">提交修改</el-button>
+</div>
+
+
+<script src="\js\vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<script>
+    var vue = new Vue({
+        el: "#info",
+        created() {
+            // 获取存储在浏览器的账号信息
+            const driverinfo = window.localStorage.getItem('driverinfo');
+            if (driverinfo != null) {
+                this.driverinfo = JSON.parse(driverinfo);
+                console.log(this.driverinfo);
+            }
+            driverid = this.driverinfo.id;
+            console.log(driverid);
+
+            axios({
+                method: "get",
+                url: "/drivers/driver/" + driverid
+            }).then((res) => {
+                this.infolist = res.data.data;
+            })
+        },
+        data: {
+            infolist: {
+                driverpassword: "",
+                driverenglishname: "",
+                age: "",
+                dphonenumber: "",
+                description: ""
+
+            }
+
+        }, methods: {
+            gogogo() {
+                axios({
+                    method: "put",
+                    url: "/drivers/admin",
+                    data: this.infolist
+                }).then((res) => {
+                    if (res.data.flag == "true") {
+                        this.$notify({
+                            title: 'title',
+                            message: '修改成功'
+                        });
+                        alert("恭喜你修改成功！");
+                    } else {
+                        this.$notify({
+                            title: 'title',
+                            message: '修改失败'
+                        });
+                    }
+                })
+            }
+
+        }
+    })
+</script>
+</body>
+
+</html>

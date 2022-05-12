@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人信息管理</title>
+</head>
+<body>
+<div id="info">
+    <el-descriptions title="个人信息" direction="vertical" :column="4" border>
+        <el-descriptions-item label="用户名">{{infolist.username}}</el-descriptions-item>
+        <el-descriptions-item label="手机号">{{infolist.phonenumber}}</el-descriptions-item>
+        <el-descriptions-item label="姓名">{{infolist.userename}}</el-descriptions-item>
+        <el-descriptions-item label="居住地" :span="2">浙江嘉兴市海宁市</el-descriptions-item>
+        <el-descriptions-item label="备注">
+            <el-tag size="small">学校</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="联系地址">{{infolist.address}}</el-descriptions-item>
+    </el-descriptions>
+</div>
+
+
+<script src="\js\vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<script>
+    var vue = new Vue({
+        el: "#info",
+        created() {
+            // 获取存储在浏览器的账号信息
+            const userinfo = window.localStorage.getItem('userinfo');
+            if (userinfo != null) {
+                this.userinfo = JSON.parse(userinfo);
+                console.log(this.userinfo);
+            }
+            userid = this.userinfo.id;
+            console.log(userid);
+
+            axios({
+                method: "get",
+                url: "/users/chazhaoid/" + userid
+            }).then((res) => {
+                this.infolist = res.data.data;
+            })
+        },
+        data: {
+            infolist: {
+                username: "",
+                userpassword: "",
+                phonenumber: "",
+                address: "",
+                userename: "",
+
+            }
+
+        }, methods: {}
+    })
+</script>
+</body>
+
+</html>

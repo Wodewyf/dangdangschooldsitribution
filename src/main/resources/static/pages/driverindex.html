@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .el-header {
+            background-color: white;
+            color: #333;
+            text-align: center;
+            line-height: 70px;
+        }
+
+        .el-aside {
+            background-color: #D3DCE6;
+            color: #333;
+            text-align: center;
+            line-height: 200px;
+            width: 200px;
+        }
+
+        .el-main {
+            background-color: #E9EEF3;
+            color: #333;
+            text-align: center;
+            line-height: 750px;
+        }
+
+        body > .el-container {
+            margin-bottom: 40px;
+        }
+
+        .el-container:nth-child(5) .el-aside,
+        .el-container:nth-child(6) .el-aside {
+            line-height: 260px;
+        }
+
+        .el-container:nth-child(7) .el-aside {
+            line-height: 320px;
+        }
+
+        .right_menu {
+            float: right;
+        }
+
+        .lefttitle {
+            float: left;
+            font-family: 楷体;
+        }
+
+
+    </style>
+
+</head>
+<body>
+
+<div id="adminindex">
+
+
+    <el-container>
+
+        <el-header>
+            <div class="lefttitle"> 当当校园跑腿骑手端</div>
+            <div class="right_menu">
+
+                <i class="el-icon-driver">{{driverinfo.drivername}}</i>
+                <i class="el-icon-switch-button" @click="exitsystem">退出登录</i>
+            </div>
+        </el-header>
+
+        <el-container>
+            <el-aside>
+
+                <el-menu
+                        :unique-opened="false"
+                        :collapse-transition="false"
+                        background-color:grenn
+                        text-clolr:red
+                        active-text-color:blak
+                >
+                    <div v-for="item in menuList" :key="item.id" @click="menuhandle(item,false)">
+                        <el-menu-item :index="item.id" >
+                            <i class="icon-font" :class="item.icon"></i>
+                            <span>{{item.name}}</span>
+                        </el-menu-item>
+                    </div>
+                </el-menu>
+
+
+            </el-aside>
+
+            <!--            iframe演示内容-->
+            <div>
+                <iframe
+                        :src="iframurl"
+                        width="1250px"
+                        height="1050px"
+                        frameborder="0"
+                >
+
+                </iframe>
+            </div>
+
+
+        </el-container>
+
+    </el-container>
+
+</div>
+
+
+<script src="\js\vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<script>
+    var vue = new Vue({
+        el: "#adminindex",
+        created() {
+            // 获取存储在浏览器的账号信息
+            const driverinfo = window.localStorage.getItem('driverinfo');
+            if (driverinfo != null) {
+                this.driverinfo = JSON.parse(driverinfo);
+
+            }
+        },
+        data: {
+            count: 10,
+            driverinfo: {},
+
+
+            // 左侧列表
+            menuList: [
+                {
+                    id: '1',
+                    name: '个人信息',
+                    url: 'driver/driverinfo.html',
+                    icon: 'el-icon-user-solid'
+                },
+                {
+                    id: '2',
+                    name: '资料修改',
+                    url: 'driver/driverinfoupdate.html',
+                    icon: 'el-icon-refresh'
+                },
+                {
+                    id: '3',
+                    name: '任务接取中心',
+                    url: 'driver/driverreceivetask.html',
+                    icon: 'el-icon-stopwatch'
+                }, {
+                    id: '4',
+                    name: '查看任务详情',
+                    url: 'driver/driversend.html',
+                    icon: 'el-icon-goblet-square-full'
+                }
+
+            ],
+            iframurl: 'driver/driverinfo.html',
+            gobackflag: false,
+
+
+        }, methods: {
+            // 退出到登录界面功能
+            exitsystem() {
+                axios({
+                    method: "post",
+                    url: "/drivers/exit",
+                }).then((res) => {
+                    if (res.data.flag == "true1") {
+                        console.log(res.data.data + res.data.flag);
+                        localStorage.removeItem('driverinfo');
+                        window.location.href = "/pages/login.html";
+                    }
+
+                })
+
+            }, menuhandle(item, gobackflag) {
+                this.iframurl = item.url;
+                this.gobackflag = gobackflag;
+            }
+
+
+        }
+    })
+
+</script>
+
+
+</body>
+</html>

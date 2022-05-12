@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>register</title>
+    <style>
+        body {
+            background: aliceblue;
+        }
+
+        .app {
+            width: 400px;
+            height: 400px;
+            background: #fff;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+            text-align: center;
+            padding-top: 100px;
+        }
+
+        .el-input .el-input__inner {
+            font-size: 1.5em;
+            font-weight: bolder;
+            padding: 0 4px;
+        }
+
+        /*下拉栏字体*/
+        .select_item {
+            height: 10px;
+            line-height: 25px;
+            font-size: 5px;
+        }
+
+        .pp {
+            font-size: 60px;
+
+            font-style: italic;
+
+            font-family: Arial, “Microsoft Yahei”;
+
+            font-weight: bold;
+
+            color: skyblue;
+        }
+
+        .aaaa {
+            display: none;
+            color: darkred;
+        }
+
+    </style>
+</head>
+<body>
+<p class="pp" align="center">当当校园跑腿系统</p>
+
+<div id="app" class="app">
+
+
+    <el-form ref="form" :model="user" label-width="80px" style="text-align: center">
+        <el-form-item label="账号">
+
+            <el-col :span="16">
+                <el-input v-model="user.username" prefix-icon="el-icon-user-solid" @blur="blurname">
+                </el-input>
+            </el-col>
+
+        </el-form-item>
+        <el-form-item label="密码">
+            <el-col :span="16">
+                <el-input v-model="user.userpassword" :show-password=true prefix-icon="el-icon-s-goods">
+
+                </el-input>
+            </el-col>
+        </el-form-item>
+        <!--        <el-form-item label="验证码">-->
+        <!--            <el-col :span="16" >-->
+        <!--                <el-input v-model="brand.ordered" prefix-icon="el-icon-loading"></el-input>-->
+        <!--            </el-col>-->
+        <!--        </el-form-item >-->
+        <el-form-item label="选择身份">
+            <el-col :span="16">
+                <el-select v-model="identy" placeholder="请选择" style="font-size:2px">
+                    <el-option
+                            v-for="item in options"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                    </el-option>
+                </el-select>
+            </el-col>
+
+        </el-form-item>
+        <el-button type="success" @click="register">注册！</el-button>
+
+    </el-form>
+
+</div>
+
+<script src="\js\vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+
+<script>
+
+    new Vue({
+        el: "#app",
+        methods: {
+            blurname() {
+                if (this.identy == 1) {
+                    axios({
+                        method: "get",
+                        url: "/users/" + this.user.username
+                    }).then((res) => {
+                        if (res.data.flag == "flase") {
+                            this.$alert('抱歉此账号已被注册', '提示', {
+                                confirmButtonText: '确定',
+                                callback: action => {
+                                    this.$message({
+                                        type: 'info',
+                                        message: '请重新输入账号！'
+                                    });
+                                }
+                            });
+                        }
+                    })
+                } else {
+                    axios({
+                        method: "get",
+                        url: "/drivers/" + this.user.username
+                    }).then((res) => {
+                        if (res.data.flag == "flase") {
+                            this.$alert('抱歉此账号已被注册', '提示', {
+                                confirmButtonText: '确定',
+                                callback: action => {
+                                    this.$message({
+                                        type: 'info',
+                                        message: '请重新输入账号！'
+                                    });
+                                }
+                            });
+                        }
+                    })
+                }
+            },
+            register() {
+                if (this.identy == 0) {
+                    this.$alert('请选择你要注册的角色', '提示', {
+                        confirmButtonText: '确定',
+                        callback: action => {
+                            this.$message({
+                                type: 'info',
+                                message: '选择注册角色'
+                            });
+                        }
+                    });
+                } else if (this.identy == 1) {
+                    axios({
+                        method: "post",
+                        url: "/users",
+                        data: this.user
+                    }).then((res) => {
+                        if (res.data.flag == "true") {
+
+                            this.$alert('恭喜你注册成功', '提示', {
+                                confirmButtonText: '确定',
+                                callback: action => {
+                                    this.$message({
+                                        type: 'info',
+                                        message: '欢迎！'
+                                    });
+                                }
+                            });
+
+                            setTimeout(() => {
+                                window.location.href = "login.html";
+                            },3000)
+
+                        }else{
+                            this.$alert('抱歉此账号已被注册', '提示', {
+                                confirmButtonText: '确定',
+                                callback: action => {
+                                    this.$message({
+                                        type: 'info',
+                                        message: '请重新输入账号！'
+                                    });
+                                }
+                            });
+                        }
+
+                    })
+                } else if (this.identy == 2) {
+                    axios({
+                        method: "post",
+                        url: "/drivers",
+                        data: this.user
+                    }).then((res) => {
+                        if (res.data.flag == "true") {
+
+                            this.$alert('恭喜你注册成功', '提示', {
+                                confirmButtonText: '确定',
+                                callback: action => {
+                                    this.$message({
+                                        type: 'info',
+                                        message: '欢迎！'
+                                    });
+                                }
+                            });
+
+                            alert("恭喜你注册成功");
+
+                            setTimeout(() => {
+                                window.location.href = "login.html";
+                            },3000)
+                        } else {
+                            this.$alert('抱歉此账号已被注册', '提示', {
+                                confirmButtonText: '确定',
+                                callback: action => {
+                                    this.$message({
+                                        type: 'info',
+                                        message: 'xx！'
+                                    });
+                                }
+                            });
+                        }
+
+
+                    })
+                }
+
+            }
+
+
+        }, data: {
+
+            dialogVisible1: false,
+
+            user: {
+                username: '',
+                userpassword: '',
+                id: ''
+            }, options: [{
+                value: '1',
+                label: '用户'
+            }, {
+                value: '2',
+                label: '骑手'
+
+            }],
+            identy: ''
+        }
+    })
+
+
+</script>
+</body>
+</html>

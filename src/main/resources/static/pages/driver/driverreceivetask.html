@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div id="drivertask">
+    <div>任务大厅</div>
+
+    <el-form :inline="true" class="demo-form-inline">
+        <el-form-item label="用户姓名">
+            <el-input v-model="taskstatus.userename" placeholder="用户姓名"></el-input>
+        </el-form-item>
+
+        <el-form-item label="地址">
+            <el-input v-model="taskstatus.useraddress" placeholder="用户地址"></el-input>
+        </el-form-item>
+
+        <el-form-item label="任务奖金">
+            <el-input v-model="taskstatus.taskprice" placeholder="任务奖金"></el-input>
+        </el-form-item>
+
+        <el-form-item>
+            <el-button @click="select" class="dalfBut">查询</el-button>
+        </el-form-item>
+
+        <el-row>
+            <el-button type="success" round @click="flash">点击刷新</el-button>
+        </el-row>
+
+    </el-form>
+
+    <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+
+        <el-table-column type="index" align="center" label="序号"></el-table-column>
+        <el-table-column prop="taskname" label="任务名称" align="center"></el-table-column>
+        <el-table-column prop="taskprice" label="任务奖金" align="center"></el-table-column>
+        <el-table-column prop="taskdescription" label="任务描述" align="center"></el-table-column>
+        <el-table-column prop="phonenumber" label="用户电话号码" align="center"></el-table-column>
+        <el-table-column prop="userename" label="用户姓名" align="center"></el-table-column>
+        <el-table-column prop="recevicetime" label="用户约定送达时间" align="center"></el-table-column>
+        <el-table-column prop="status" label="订单状态" align="center"></el-table-column>
+        <el-table-column prop="taskstarttime" label="任务创立时间" align="center"></el-table-column>
+        <el-table-column label="操作" align="center">
+            <template slot-scope="scope">
+                <el-button type="primary" size="mini" @click="handlemoredate(scope.row)">查看任务详情</el-button>
+                <el-button type="warning" size="mini" @click="handletake(scope.row)">接取任务</el-button>
+            </template>
+        </el-table-column>
+
+    </el-table>
+
+
+    <!--    任务详情弹框-->
+    <div class="add-form">
+        <el-dialog title="任务详情" :visible.sync="dialogFormVisible">
+            <el-form ref="dataAddForm" label-position="right" label-width="100px">
+
+                <el-descriptions title="任务详情" :column="3" border>
+                    <el-descriptions-item label="任务订单号">{{taskinfo.id}}</el-descriptions-item>
+                    <el-descriptions-item label="任务名" label-class-name="my-label" content-class-name="my-content">
+                        {{taskinfo.taskname}}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="任务奖金">{{taskinfo.taskprice}}</el-descriptions-item>
+                    <el-descriptions-item label="任务备注信息">{{taskinfo.taskdescription}}</el-descriptions-item>
+                    <el-descriptions-item label="任务创立时间">{{taskinfo.taskstarttime}}</el-descriptions-item>
+                    <el-descriptions-item label="任务状态">{{taskinfo.status}}</el-descriptions-item>
+                    <el-descriptions-item label="用户电话">{{taskinfo.phonenumber}}</el-descriptions-item>
+                    <el-descriptions-item label="用户姓名">{{taskinfo.userename}}</el-descriptions-item>
+                    <el-descriptions-item label="任务预计收货时间">{{taskinfo.recevicetime}}</el-descriptions-item>
+                    <el-descriptions-item label="联系地址" :contentStyle="{'text-align': 'right'}">
+                        {{taskinfo.useraddress}}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="图片">
+                        <img :src="img" height="80px" width="80px">
+                    </el-descriptions-item>
+
+                </el-descriptions>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisible=false">确定查看</el-button>
+            </div>
+        </el-dialog>
+    </div>
+
+    <!--    接取任务-->
+    <div class="add-form">
+        <el-dialog title="任务接取" :visible.sync="dialogFormVisible2">
+            <el-form ref="form" :model="driverinfoa" label-width="80px" style="text-align: center">
+                <el-form-item label="骑手姓名">
+                    <el-col :span="16">
+                        <el-input v-model="driverinfoa.driverenglishname" prefix-icon="el-icon-edit"></el-input>
+                    </el-col>
+                </el-form-item>
+                <el-form-item label="骑手电话号码">
+                    <el-col :span="16">
+                        <el-input v-model="driverinfoa.dphonenumber" prefix-icon="el-icon-s-goods"></el-input>
+                    </el-col>
+                </el-form-item>
+                <el-form-item label="选择预计送达时间">
+                    <el-date-picker
+                            v-model="driverinfoa.drivercalsendtime"
+                            type="datetime"
+                            placeholder="选择配送"
+                            value-format=yyyy-MM-dd_HH:mm:ss>
+                    </el-date-picker>
+                </el-form-item>
+
+                <el-button type="success" @click="taskgo">接取任务</el-button>
+            </el-form>
+        </el-dialog>
+    </div>
+
+
+</div>
+
+
+<script src="\js\vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+
+<script>
+    var vue = new Vue({
+        el: "#drivertask",
+        data: {
+            dataList: [],//列表数据
+            taskinfo: {},
+            dialogFormVisible: false,
+            dialogFormVisible2: false,
+
+            task: {
+                status: "待接单",
+            },
+
+            // 放driver信息的
+            driverinfoa: {
+                drivername: "",
+                driverenglishname: "",
+                dphonenumber: "",
+                drivercalsendtime: "",
+
+            },
+            taskstatus: {},
+            img: ""
+
+
+        }, created() {
+
+            this.save();
+
+        }, methods: {
+
+            select() {
+                axios({
+                    method: "post",
+                    url: "/tasks/getstatus1",
+                    data: this.taskstatus
+                }).then((res) => {
+                    this.dataList = res.data.data;
+                })
+            },
+            flash() {
+                this.save();
+            },
+
+            save() {
+                // 获取存储在浏览器的骑手账号信息
+                const driverinfo = window.localStorage.getItem('driverinfo');
+                if (driverinfo != null) {
+                    this.driverinfo = JSON.parse(driverinfo);
+                }
+
+                // 获取该骑手的id值
+                driverid = this.driverinfo.id;
+
+                axios({
+                    method: "post",
+                    url: "/tasks/daijiedan",
+                    data: this.task,
+                }).then((res) => {
+                    if (res.data.flag = "true") {
+                        this.dataList = res.data.data;
+                    }
+
+                })
+
+
+            },
+
+            // 查看任务详情
+            handlemoredate(row) {
+                console.log(row.id);
+                axios({
+                    method: "get",
+                    url: "/tasks/" + row.id
+                }).then((res) => {
+                    if (res.data.flag == "true") {
+                        this.dialogFormVisible = true;
+                        this.taskinfo = res.data.data;
+
+                    }
+                    // 下载图片
+                    axios({
+                        method: "get",
+                        url: "/images/download?image=" + this.taskinfo.image
+                    }).then((res => {
+                        this.img = "/images/download?image=" + this.taskinfo.image
+                        if (res.data.flag == "false") {
+
+                        }
+                    }))
+                })
+
+
+            },
+
+            // 接取任务
+            handletake(row) {
+                console.log(row.id);
+
+                // 1.通过id找到该骑手的所有信息。
+                axios({
+                    method: "get",
+                    url: "/drivers/admin/" + driverid
+                }).then((res) => {
+                    if (res.data.flag == "true") {
+                        this.driverinfoa = res.data.data;
+
+                    }
+                })
+
+                // 这个时候打开在一个弹框，显示确认骑手的信息，里面的组件是input和一个世界 input的内容就是driverinfoa里面的内容
+                this.dialogFormVisible2 = true;
+
+
+                // 2.把这些信息装到一个模型里，然后添加数据到表task，（完善表）。
+
+            },
+
+            taskgo() {
+                axios({
+                    method: "put",
+                    url: "/tasks/update",
+                    data: this.driverinfoa
+                }).then((res) => {
+                    if (res.data.data == "1") {
+                        this.$message({
+                            type: 'success',
+                            message: '恭喜你，接单成功!'
+                        });
+                        this.dialogFormVisible2 = false;
+                        this.save();
+                    }
+
+
+                })
+            }
+
+
+        }
+
+
+    })
+
+</script>
+
+</body>
+</html>
